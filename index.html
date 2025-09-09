@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joke Collection - 20 Random Jokes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin: 50px 0;
+        }
+
+        .jokes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .joke-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .joke-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .joke-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .joke-type {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .joke-setup {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .joke-punchline {
+            font-size: 1rem;
+            color: #666;
+            font-style: italic;
+            border-left: 3px solid #667eea;
+            padding-left: 15px;
+            line-height: 1.5;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .joke-punchline.revealed {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .joke-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .joke-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .joke-card.revealed {
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+        }
+
+        .click-hint {
+            font-size: 0.9rem;
+            color: #999;
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .joke-card.revealed .click-hint {
+            display: none;
+        }
+
+        .joke-id {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f0f0f0;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .refresh-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Joke Collection</h1>
+            <p>20 Random Jokes from the Official Joke API</p>
+            <p style="font-size: 1rem; margin-top: 10px; opacity: 0.8;">Click on any joke card to reveal the punchline!</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Loading jokes...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p>Failed to load jokes. Please try again.</p>
+        </div>
+
+        <div id="jokes-container" class="jokes-grid" style="display: none;">
+            <!-- Jokes will be inserted here -->
+        </div>
+
+        <button id="refresh-btn" class="refresh-btn" style="display: none;" onclick="loadJokes()">
+            🔄 Load New Jokes
+        </button>
+    </div>
+
+    <script>
+        const API_URL = 'https://official-joke-api.appspot.com/random_joke';
+        const JOKES_COUNT = 20;
+
+        async function fetchJoke() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching joke:', error);
+                throw error;
+            }
+        }
+
+        async function loadJokes() {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error');
+            const jokesContainer = document.getElementById('jokes-container');
+            const refreshBtn = document.getElementById('refresh-btn');
+
+            // Show loading state
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            jokesContainer.style.display = 'none';
+            refreshBtn.style.display = 'none';
+
+            try {
+                // Fetch 20 jokes in parallel for speed
+                const jokePromises = Array(JOKES_COUNT).fill().map(() => fetchJoke());
+                const jokes = await Promise.all(jokePromises);
+
+                // Clear previous jokes
+                jokesContainer.innerHTML = '';
+
+                // Display jokes
+                jokes.forEach((joke, index) => {
+                    const jokeCard = createJokeCard(joke, index + 1);
+                    jokesContainer.appendChild(jokeCard);
+                });
+
+                // Show jokes and refresh button
+                loadingEl.style.display = 'none';
+                jokesContainer.style.display = 'grid';
+                refreshBtn.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading jokes:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        function createJokeCard(joke, number) {
+            const card = document.createElement('div');
+            card.className = 'joke-card';
+            
+            card.innerHTML = `
+                <div class="joke-id">#${joke.id}</div>
+                <div class="joke-type">${joke.type}</div>
+                <div class="joke-setup">${joke.setup}</div>
+                <div class="joke-punchline">${joke.punchline}</div>
+                <div class="click-hint">Click to reveal the punchline!</div>
+            `;
+            
+            // Add click event listener to reveal punchline
+            card.addEventListener('click', function() {
+                if (!card.classList.contains('revealed')) {
+                    card.classList.add('revealed');
+                    const punchline = card.querySelector('.joke-punchline');
+                    punchline.classList.add('revealed');
+                }
+            });
+            
+            return card;
+        }
+
+        // Load jokes when page loads
+        document.addEventListener('DOMContentLoaded', loadJokes);
+    </script>
+</body>
+</html>
